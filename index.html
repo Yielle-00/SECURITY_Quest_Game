@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Security Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="hub-theme">
+
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+
+<!-- ================= AUTH ================= -->
+<div id="auth-overlay">
+  <div id="auth-card">
+    <h1 id="auth-title">🛡️ Security Quest — Sign In</h1>
+    <p id="auth-sub">Sign in to save your progress on this device, or create a new account.</p>
+    <label class="auth-label">Username</label>
+    <input id="auth-username" type="text" autocomplete="username" maxlength="24" placeholder="e.g. j.rivera">
+    <label class="auth-label">Password</label>
+    <input id="auth-password" type="password" autocomplete="current-password" maxlength="40" placeholder="••••••••">
+    <div id="auth-error"></div>
+    <div id="auth-buttons">
+      <button id="login-btn">Log In</button>
+      <button id="register-btn">Register</button>
+    </div>
+    <p id="auth-note">Progress is saved locally in this browser only — not a secure account system.</p>
+  </div>
+</div>
+
+<!-- ================= CHARACTER CUSTOMIZATION ================= -->
+<div id="customize-overlay" class="hidden">
+  <div id="customize-card">
+    <h1 id="customize-title">🧑‍✈️ Build Your Sentinel</h1>
+    <p id="customize-sub">Pick your colors — you can always change these later from the pause menu.</p>
+    <canvas id="preview-canvas"></canvas>
+    <div class="custom-row">
+      <label>Skin tone</label>
+      <div class="swatch-row" id="skin-swatches"></div>
+    </div>
+    <div class="custom-row">
+      <label>Face shape</label>
+      <div class="swatch-row" id="face-options"></div>
+    </div>
+    <div class="custom-row">
+      <label>Hair style</label>
+      <div class="swatch-row" id="hair-options"></div>
+    </div>
+    <div class="custom-row">
+      <label>Hair color</label>
+      <div class="swatch-row" id="hair-color-swatches"></div>
+    </div>
+    <div class="custom-row">
+      <label>Shirt</label>
+      <div class="swatch-row" id="shirt-swatches"></div>
+    </div>
+    <div class="custom-row">
+      <label>Trousers</label>
+      <div class="swatch-row" id="pants-swatches"></div>
+    </div>
+    <div class="custom-row">
+      <label>Badge</label>
+      <div class="swatch-row" id="badge-swatches"></div>
+    </div>
+    <label class="auth-label" style="margin-top:0;">Codename</label>
+    <input id="character-name" type="text" maxlength="18" placeholder="e.g. Nightwatch">
+    <button id="customize-confirm-btn">Enter the Field →</button>
+  </div>
+</div>
+
+<!-- ================= HUB ================= -->
+<div id="hub-overlay" class="hidden">
+  <div id="hub-user-row"><span id="current-user-label"></span><button id="hub-customize-btn">🎨 Customize</button><button id="logout-btn">Switch user</button><button id="hub-exit-btn">🚪 Exit Game</button></div>
+  <h1 id="hub-title">🛡️ Security Quest</h1>
+  <p id="hub-sub">Five postings, three shifts each. Clear a location to unlock the next, and spend what you earn in the supply room.</p>
+  <div id="hub-toolbar">
+    <div id="hub-coin-label"><span class="gem"></span>0</div>
+    <button id="hub-shop-btn">🛍️ Supply room</button>
+    <button id="hub-notif-btn">🔔 Dispatch</button>
+  </div>
+  <div id="level-cards"></div>
+</div>
+
+<!-- ================= HUD ================= -->
+<div id="hud">
+  <div class="hud-card" id="title-card">
+    <div>
+      <h1 id="hud-h1">—</h1>
+      <p id="hud-p">—</p>
+    </div>
+  </div>
+  <div class="hud-card" id="meter-card">
+    <div class="meter-label">Trust Meter</div>
+    <div id="shells"></div>
+    <div class="meter-label" style="margin-top:10px;">Studs Found</div>
+    <div id="stud-count">0/0</div>
+    <div id="run-stats">
+      <span class="run-pill" id="pill-diff">🌤 Day shift</span>
+      <span class="run-pill coins" id="pill-coins"><span class="gem"></span>+0</span>
+      <span class="run-pill timer hidden" id="pill-timer">⏱ 3:30</span>
+      <span class="run-pill lives" id="pill-lives" title="Lives: a wrong answer or a timed-out clock costs one">❤️❤️❤️</span>
+    </div>
+    <div class="hud-actions">
+      <button id="audio-btn">🔊</button>
+      <button id="local-map-btn">🧭</button>
+      <button id="pause-btn">⏸</button>
+      <button id="map-btn">🗺 Map</button>
+      <button id="worlds-btn" title="Choose a world">🌍 Worlds</button>
+      <button id="hud-logout-btn" title="Log out">🚪 Log out</button>
+    </div>
+  </div>
+</div>
+
+<div id="Mission-banner">
+  <span class="obj-icon"><span class="gem"></span></span>
+  <div class="obj-body">
+    <span class="obj-label">Mission</span>
+    <span id="objective-text">—</span>
+    <div id="mission-bar"><div id="mission-fill"></div><span id="mission-pct">0%</span></div>
+  </div>
+  <span id="objective-progress" class="obj-progress"></span>
+</div>
+
+<div id="local-map-overlay" class="hidden" style="position:fixed; inset:0; z-index:32; background:rgba(9,20,28,0.8); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="width:100%; max-width:380px; background:linear-gradient(180deg, var(--ink-2), var(--ink)); border:1px solid rgba(255,255,255,0.14); border-radius:20px; padding:20px; color:var(--foam); text-align:center;">
+    <h2 style="margin:0 0 4px 0;" id="local-map-title">🧭 Area Map</h2>
+    <p style="margin:0 0 14px 0; font-size:12.5px; color:var(--text-soft);">Tap a marker to see what it is and how far away it is.</p>
+    <canvas id="local-map-canvas" width="320" height="320" style="width:100%; max-width:320px; aspect-ratio:1/1; border-radius:16px; background:rgba(6,16,24,0.6); border:1px solid rgba(255,255,255,0.16); cursor:pointer;"></canvas>
+    <button id="local-map-close-btn" style="margin-top:16px; width:100%; background:linear-gradient(180deg, var(--teal), #1F7F79); border:none; color:var(--foam); padding:11px; border-radius:12px; font-weight:600; cursor:pointer;">Close</button>
+  </div>
+</div>
+
+<div id="controls-hint"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk</span><span><kbd>Space</kbd> to jump</span><span>Collect the gold studs, then find the glowing markers</span></div>
+
+<div id="touch-pad">
+  <button id="btn-up">▲</button>
+  <button id="btn-left">◀</button>
+  <button id="btn-right">▶</button>
+  <button id="btn-down">▼</button>
+  <button id="btn-jump" style="grid-column:1/4; grid-row:4; height:38px; margin-top:4px;">⤒ JUMP</button>
+</div>
+<div id="flash"></div>
+
+<div id="dialogue-wrap" class="hidden">
+  <div id="dialogue-panel">
+    <div id="dialogue-npc"><span class="badge"></span><span id="npc-name">—</span></div>
+    <div id="dialogue-scenario"></div>
+    <div id="dialogue-hint" style="display:none; font-size:12.5px; color:var(--neon); margin:-8px 0 14px 0;"></div>
+    <div id="dialogue-choices"></div>
+    <div id="dialogue-feedback">
+      <div id="feedback-tag"></div>
+      <div id="feedback-text"></div>
+      <button id="continue-btn">Continue patrol →</button>
+    </div>
+  </div>
+</div>
+
+<div id="pause-overlay" class="hidden">
+  <div id="pause-card">
+    <h2 id="pause-title">⏸ Paused</h2>
+    <p id="pause-sub">Take a breather, Sentinel.</p>
+    <div id="pause-menu-list">
+      <button id="resume-btn">▶ Resume</button>
+      <button id="restart-level-btn">⟲ Restart Posting</button>
+      <button id="pause-customize-btn">🎨 Customize Character</button>
+      <button id="pause-shop-btn">🛍️ Supply Room</button>
+      <button id="pause-audio-btn">🔊 Sound: On</button>
+      <button id="pause-map-btn">🗺 Back to Map</button>
+      <button id="pause-logout-btn">🚪 Switch User</button>
+    </div>
+  </div>
+</div>
+
+<div id="complete-overlay">
+  <div id="complete-card">
+    <h2 id="complete-heading">Level complete</h2>
+    <div class="score-line" id="score-line"></div>
+    <div class="reward-line" id="reward-line"></div>
+    <div id="recap-list"></div>
+    <div id="complete-buttons">
+      <button id="continue-level-btn">Continue to next posting →</button>
+      <button id="retry-level-btn">Run this shift again</button>
+      <button id="map-return-btn">Back to map</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== LOADING SCREEN ========== -->
+<div id="loading-overlay">
+  <div id="loading-mark">🛡️</div>
+  <div id="loading-title">Security Quest</div>
+  <div id="loading-sub">Warming up the field kit</div>
+  <div id="loading-bar"><div id="loading-fill"></div></div>
+  <p id="loading-tip"></p>
+</div>
+
+<!-- ========== TOASTS ========== -->
+<div id="toast-stack"></div>
+
+<!-- ========== DIFFICULTY PICKER ========== -->
+<div id="difficulty-overlay" class="modal hidden">
+  <div class="modal-card" style="max-width:500px">
+    <h2 id="diff-title">Pick your shift</h2>
+    <p class="modal-sub" id="diff-sub"></p>
+    <div id="diff-list"></div>
+    <button class="modal-close" id="diff-cancel">Back to the map</button>
+  </div>
+</div>
+
+<!-- ========== SHOP ========== -->
+<div id="shop-overlay" class="modal hidden">
+  <div class="modal-card">
+    <div class="shop-head">
+      <div>
+        <h2>Supply room</h2>
+        <p class="modal-sub" style="margin:0">Spend the credits you earn on patrol. Gear changes how a shift plays; looks are yours to wear.</p>
+      </div>
+      <div class="coin-pill" id="shop-coin-label"><span class="gem"></span>0</div>
+    </div>
+    <div id="shop-body"></div>
+    <button class="modal-close" id="shop-close">Close</button>
+  </div>
+</div>
+
+<!-- ========== NOTIFICATIONS ========== -->
+<div id="notif-overlay" class="modal hidden">
+  <div class="modal-card" style="max-width:520px">
+    <h2>Dispatch log</h2>
+    <p class="modal-sub">Sign-ins, clearances, rewards and purchases on this account.</p>
+    <div id="notif-list"></div>
+    <button class="modal-close" id="notif-close">Close</button>
+  </div>
+</div>
+
+<!-- ========== EXIT CONFIRM (lobby only) ========== -->
+<div id="exit-confirm-overlay" class="modal hidden">
+  <div class="modal-card" style="max-width:380px; text-align:center;">
+    <h2>Leave Security Quest?</h2>
+    <p class="modal-sub">Your progress and credits are saved automatically, so it's safe to head out.</p>
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button id="exit-cancel-btn" style="flex:1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:var(--foam); border-radius:12px; padding:11px; font-family:'Fredoka',sans-serif; font-size:13px; cursor:pointer;">Stay</button>
+      <button id="exit-confirm-btn" style="flex:1; border:none; border-radius:12px; padding:11px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; cursor:pointer; background:linear-gradient(180deg,#E24E30,#A63523); color:#F4F8F5;">Exit</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Load order matters: database first, then the game that uses it -->
+<!-- Firebase: online accounts + save data. If it is not set up (or cannot load) the game keeps saving in the browser. -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/database.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
